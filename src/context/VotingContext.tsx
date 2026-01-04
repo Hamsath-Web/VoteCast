@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, ReactNode, useContext } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect } from 'react';
 import {
   collection,
   doc,
@@ -9,17 +9,19 @@ import {
   deleteDoc,
   writeBatch,
   serverTimestamp,
+  increment,
 } from 'firebase/firestore';
 import {
   useFirestore,
   useCollection,
   useMemoFirebase,
   useUser,
+  initiateAnonymousSignIn,
+  useAuth,
 } from '@/firebase';
 import {
   addDocumentNonBlocking,
   deleteDocumentNonBlocking,
-  setDocumentNonBlocking,
   updateDocumentNonBlocking,
 } from '@/firebase/non-blocking-updates';
 import type { Voting, Contestant } from '@/lib/types';
@@ -53,10 +55,17 @@ export const VotingContext = createContext<VotingContextType | undefined>(
 
 export const VotingProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
+  const auth = useAuth();
   const { user, isUserLoading } = useUser();
 
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [user, isUserLoading, auth]);
+
   const votingsQuery = useMemoFirebase(
-    () => collection(firestore, 'votings'),
+    () => (firestore ? collection(firestore, 'votings') : null),
     [firestore]
   );
   const { data: votingsData, isLoading: votingsLoading } =
@@ -64,7 +73,10 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
 
   const getContestants = (votingId: string) => {
     const contestantsQuery = useMemoFirebase(
-      () => collection(firestore, 'votings', votingId, 'contestants'),
+      () =>
+        firestore
+          ? collection(firestore, 'votings', votingId, 'contestants')
+          : null,
       [firestore, votingId]
     );
     const { data, isLoading } = useCollection<Contestant>(contestantsQuery);
@@ -75,14 +87,21 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
     title: string;
     contestants: { name: string; faceImage: string }[];
   }) => {
-    if (!user) throw new Error('User must be authenticated to create a voting.');
+    if (!user || !firestore)
+      throw new Error('User must be authenticated to create a voting.');
 
-    const newVotingRef = await addDoc(collection(firestore, 'votings'), {
-      title: votingData.title,
-      status: 'open',
-      ownerId: user.uid,
-      createdAt: serverTimestamp(),
-    });
+    const newVotingRef = doc(collection(firestore, 'votings'));
+
+    const votingPayload = {
+        id: newVotingRef.id,
+        title: votingData.title,
+        status: 'open',
+        ownerId: user.uid,
+        createdAt: serverTimestamp(),
+    }
+
+    addDocumentNonBlocking(collection(firestore, 'votings'), votingPayload);
+
 
     const batch = writeBatch(firestore);
     votingData.contestants.forEach((contestant) => {
@@ -96,6 +115,16 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const castVote = (votingId: string, contestant: Contestant) => {
+     if (!user || !firestore) return;
+    
+    const voteRef = doc(collection(firestore, 'votings', votingId, 'votes'));
+    addDocumentNonBlocking(voteRef.parent, {
+        contestantId: contestant.id,
+        voterId: user.uid,
+        votingId: votingId,
+        voteDateTime: serverTimestamp(),
+    });
+
     const contestantRef = doc(
       firestore,
       'votings',
@@ -103,10 +132,11 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
       'contestants',
       contestant.id
     );
-    updateDocumentNonBlocking(contestantRef, { votes: contestant.votes + 1 });
+    updateDocumentNonBlocking(contestantRef, { votes: increment(1) });
   };
 
   const completeVoting = (votingId: string) => {
+    if(!firestore) return;
     const votingRef = doc(firestore, 'votings', votingId);
     updateDocumentNonBlocking(votingRef, { status: 'closed' });
   };
@@ -116,6 +146,7 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteVoting = async (votingId: string) => {
+    if(!firestore) return;
     // Note: This doesn't delete subcollections. For a production app,
     // a Cloud Function would be needed to recursively delete contestants and votes.
     const votingRef = doc(firestore, 'votings', votingId);
@@ -129,6 +160,7 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
       contestants: (Partial<Contestant> & { name: string; faceImage: string })[];
     }
   ) => {
+    if(!firestore) return;
     const votingRef = doc(firestore, 'votings', votingId);
     await updateDoc(votingRef, { title: updatedData.title });
 

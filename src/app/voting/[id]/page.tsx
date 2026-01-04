@@ -135,7 +135,7 @@ export default function VotingPage() {
                         src={contestant.faceImage}
                         alt={`${contestant.name} face`}
                         fill
-                        className="object-cover"
+                        className="object-contain"
                       />
                   </div>
                 </CardContent>
