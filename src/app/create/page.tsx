@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { VotingContext } from '@/context/VotingContext';
+import { useVoting } from '@/context/VotingContext';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Trash, Upload } from 'lucide-react';
 import Link from 'next/link';
@@ -35,7 +35,6 @@ const contestantSchema = z.object({
 
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
-  numberOfContestants: z.coerce.number().min(2, 'Must have at least 2 contestants'),
   contestants: z.array(contestantSchema).min(2),
 });
 
@@ -52,14 +51,14 @@ const fileToDataUrl = (file: File): Promise<string> => {
 
 export default function CreateVotingPage() {
   const router = useRouter();
-  const { addVoting } = useContext(VotingContext);
+  const { addVoting } = useVoting();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
-      numberOfContestants: 2,
       contestants: [
         { name: '', faceImage: '' },
         { name: '', faceImage: '' },
@@ -67,32 +66,35 @@ export default function CreateVotingPage() {
     },
   });
 
-  const { fields, append, remove, replace } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'contestants',
   });
-
-  const handleContestantCountChange = (count: number) => {
-    if (count < 2) count = 2;
-    form.setValue('numberOfContestants', count);
-    const currentCount = fields.length;
-    if (count > currentCount) {
-      for (let i = currentCount; i < count; i++) {
-        append({ name: '', faceImage: '' });
-      }
-    } else if (count < currentCount) {
-      const newFields = fields.slice(0, count);
-      replace(newFields);
-    }
+  
+  const addContestant = () => {
+    append({ name: '', faceImage: '' });
   };
 
-  const onSubmit = (data: FormData) => {
-    addVoting({ title: data.title, contestants: data.contestants });
-    toast({
-      title: 'Success!',
-      description: `Voting "${data.title}" has been created.`,
-    });
-    router.push('/');
+
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+        await addVoting({ title: data.title, contestants: data.contestants });
+        toast({
+        title: 'Success!',
+        description: `Voting "${data.title}" has been created.`,
+        });
+        router.push('/');
+    } catch (error) {
+        console.error("Failed to create voting", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to create voting. Please try again."
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -116,39 +118,25 @@ export default function CreateVotingPage() {
                     <FormItem>
                       <FormLabel>Voting Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Team MVP for Q3" {...field} />
+                        <Input placeholder="e.g., Team MVP for Q3" {...field} disabled={isSubmitting}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="numberOfContestants"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Contestants</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="2"
-                          {...field}
-                          onChange={(e) => handleContestantCountChange(parseInt(e.target.value, 10))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
                 <Separator />
-                <h3 className="text-lg font-medium">Contestant Details</h3>
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Contestant Details</h3>
+                    <Button type="button" onClick={addContestant} disabled={isSubmitting}>Add Contestant</Button>
+                </div>
                 <div className="space-y-6">
                   {fields.map((field, index) => (
                     <div key={field.id} className="p-4 border rounded-lg relative space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Contestant {index + 1}</h4>
                         {fields.length > 2 && (
-                          <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                          <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} disabled={isSubmitting}>
                             <Trash className="h-4 w-4" />
                           </Button>
                         )}
@@ -159,7 +147,7 @@ export default function CreateVotingPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Name</FormLabel>
-                              <FormControl><Input placeholder={`Contestant ${index + 1} Name`} {...field} /></FormControl>
+                              <FormControl><Input placeholder={`Contestant ${index + 1} Name`} {...field} disabled={isSubmitting} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -186,9 +174,10 @@ export default function CreateVotingPage() {
                                                     }
                                                 }}
                                                 {...rest}
+                                                disabled={isSubmitting}
                                             />
                                             <label htmlFor={`faceImage-${index}`} className="flex-1">
-                                                <Button type="button" asChild>
+                                                <Button type="button" asChild disabled={isSubmitting}>
                                                     <span className="cursor-pointer w-full">
                                                         <Upload className="mr-2 h-4 w-4"/>
                                                         {value ? 'Change Image' : 'Upload Image'}
@@ -204,7 +193,9 @@ export default function CreateVotingPage() {
                     </div>
                   ))}
                 </div>
-                <Button type="submit">Create Voting</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Creating...' : 'Create Voting'}
+                </Button>
               </form>
             </Form>
           </CardContent>

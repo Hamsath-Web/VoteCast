@@ -1,28 +1,39 @@
 
 'use client';
 
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Crown, ArrowLeft, Trophy } from 'lucide-react';
-import { VotingContext } from '@/context/VotingContext';
+import { useVoting } from '@/context/VotingContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResultsChart } from '@/components/ResultsChart';
+import { Contestant } from '@/lib/types';
 
 export default function ResultsPage() {
   const params = useParams();
-  const { getVotingById } = useContext(VotingContext);
-  const voting = getVotingById(params.id as string);
+  const { getVotingById, getContestants } = useVoting();
+  const votingId = params.id as string;
+  const voting = getVotingById(votingId);
+  const { data: contestants, isLoading: contestantsLoading } = getContestants(votingId);
 
   const sortedContestants = useMemo(() => {
-    if (!voting) return [];
-    return [...voting.contestants].sort((a, b) => b.votes - a.votes);
-  }, [voting]);
+    if (!contestants) return [];
+    return [...contestants].sort((a, b) => b.votes - a.votes);
+  }, [contestants]);
 
-  if (!voting) {
+  if (contestantsLoading || !voting) {
     return (
+      <div className="container mx-auto p-8 text-center">
+        <h1 className="text-2xl font-bold">Loading results...</h1>
+      </div>
+    );
+  }
+  
+  if (!contestants) {
+     return (
       <div className="container mx-auto p-8 text-center">
         <h1 className="text-2xl font-bold">Voting Not Found</h1>
         <p className="text-muted-foreground">The voting you are looking for does not exist.</p>
@@ -88,7 +99,7 @@ export default function ResultsPage() {
             </CardHeader>
             <CardContent>
               {totalVotes > 0 ? (
-                <ResultsChart contestants={sortedContestants} />
+                <ResultsChart contestants={sortedContestants as Contestant[]} />
               ) : (
                 <div className="h-[350px] flex items-center justify-center">
                   <p className="text-muted-foreground">Chart will be displayed here once votes are recorded.</p>

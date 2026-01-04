@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { VotingProvider } from '@/context/VotingContext';
 import Header from '@/components/Header';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'VoteCast',
@@ -25,13 +26,15 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
-        <VotingProvider>
-          <Header />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Toaster />
-        </VotingProvider>
+        <FirebaseClientProvider>
+          <VotingProvider>
+            <Header />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Toaster />
+          </VotingProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

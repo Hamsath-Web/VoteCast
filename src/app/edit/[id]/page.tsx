@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,11 +23,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { VotingContext } from '@/context/VotingContext';
+import { useVoting } from '@/context/VotingContext';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Trash, Upload } from 'lucide-react';
 import Link from 'next/link';
-import { Contestant } from '@/lib/types';
 
 const contestantSchema = z.object({
   id: z.string().optional(),
@@ -38,7 +37,6 @@ const contestantSchema = z.object({
 
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
-  numberOfContestants: z.coerce.number().min(2, 'Must have at least 2 contestants'),
   contestants: z.array(contestantSchema).min(2),
 });
 
@@ -57,68 +55,62 @@ export default function EditVotingPage() {
   const router = useRouter();
   const params = useParams();
   const votingId = params.id as string;
-  const { getVotingById, updateVoting } = useContext(VotingContext);
+  const { getVotingById, updateVoting, getContestants } = useVoting();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const voting = getVotingById(votingId);
+  const { data: contestants, isLoading: contestantsLoading } = getContestants(votingId);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
-      numberOfContestants: 2,
       contestants: [],
     },
   });
 
   useEffect(() => {
     if (voting) {
-      form.reset({
-        title: voting.title,
-        numberOfContestants: voting.contestants.length,
-        contestants: voting.contestants,
-      });
-    } else {
-        // Handle case where voting is not found, maybe redirect
-        toast({
-            variant: "destructive",
-            title: "Not Found",
-            description: "Voting not found.",
-        })
-        router.push('/');
+      form.setValue('title', voting.title);
     }
-  }, [voting, form, router, toast]);
+    if (contestants) {
+      form.setValue('contestants', contestants);
+    }
+  }, [voting, contestants, form]);
 
-  const { fields, append, remove, replace } = useFieldArray({
+
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'contestants',
   });
 
-  const handleContestantCountChange = (count: number) => {
-    if (count < 2) count = 2;
-    form.setValue('numberOfContestants', count);
-    const currentCount = fields.length;
-    if (count > currentCount) {
-      for (let i = currentCount; i < count; i++) {
-        append({ name: '', faceImage: '' });
-      }
-    } else if (count < currentCount) {
-      const newFields = fields.slice(0, count);
-      replace(newFields);
-    }
-  };
-
-  const onSubmit = (data: FormData) => {
-    const updatedContestants: (Omit<Contestant, 'id' | 'votes'> & { id?: string | undefined, votes?: number | undefined})[] = data.contestants.map(c => ({...c}));
-    updateVoting(votingId, { title: data.title, contestants: updatedContestants as Contestant[] });
-    toast({
-      title: 'Success!',
-      description: `Voting "${data.title}" has been updated.`,
-    });
-    router.push('/');
+  const addContestant = () => {
+    append({ name: '', faceImage: '', votes: 0 });
   };
   
-    if (!voting) {
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      await updateVoting(votingId, data);
+      toast({
+        title: 'Success!',
+        description: `Voting "${data.title}" has been updated.`,
+      });
+      router.push('/');
+    } catch (error) {
+      console.error("Failed to update voting", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update voting. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+    if (!voting || contestantsLoading) {
         return <div className="container mx-auto p-4 md:p-8 text-center">Loading...</div>;
     }
 
@@ -143,40 +135,25 @@ export default function EditVotingPage() {
                     <FormItem>
                       <FormLabel>Voting Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Team MVP for Q3" {...field} />
+                        <Input placeholder="e.g., Team MVP for Q3" {...field} disabled={isSubmitting}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="numberOfContestants"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Contestants</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="2"
-                          {...field}
-                          value={fields.length}
-                          onChange={(e) => handleContestantCountChange(parseInt(e.target.value, 10))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
                 <Separator />
-                <h3 className="text-lg font-medium">Contestant Details</h3>
+                 <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Contestant Details</h3>
+                    <Button type="button" onClick={addContestant} disabled={isSubmitting}>Add Contestant</Button>
+                </div>
                 <div className="space-y-6">
                   {fields.map((field, index) => (
                     <div key={field.id} className="p-4 border rounded-lg relative space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Contestant {index + 1}</h4>
                         {fields.length > 2 && (
-                          <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                          <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} disabled={isSubmitting}>
                             <Trash className="h-4 w-4" />
                           </Button>
                         )}
@@ -187,7 +164,7 @@ export default function EditVotingPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Name</FormLabel>
-                              <FormControl><Input placeholder={`Contestant ${index + 1} Name`} {...field} /></FormControl>
+                              <FormControl><Input placeholder={`Contestant ${index + 1} Name`} {...field} disabled={isSubmitting} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -214,9 +191,10 @@ export default function EditVotingPage() {
                                                     }
                                                 }}
                                                 {...rest}
+                                                disabled={isSubmitting}
                                             />
                                             <label htmlFor={`faceImage-${index}`} className="flex-1">
-                                                <Button type="button" asChild>
+                                                <Button type="button" asChild disabled={isSubmitting}>
                                                     <span className="cursor-pointer w-full">
                                                         <Upload className="mr-2 h-4 w-4"/>
                                                         {value ? 'Change Image' : 'Upload Image'}
@@ -232,7 +210,9 @@ export default function EditVotingPage() {
                     </div>
                   ))}
                 </div>
-                <Button type="submit">Update Voting</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Updating...' : 'Update Voting'}
+                </Button>
               </form>
             </Form>
           </CardContent>

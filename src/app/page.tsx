@@ -24,11 +24,11 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { VotingContext } from '@/context/VotingContext';
+import { useVoting } from '@/context/VotingContext';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
-  const { votings, deleteVoting } = useContext(VotingContext);
+  const { votings, deleteVoting, loading } = useVoting();
   const { toast } = useToast();
 
   const handleDelete = (votingId: string, votingTitle: string) => {
@@ -38,6 +38,40 @@ export default function Home() {
       description: `The voting "${votingTitle}" has been removed.`,
     });
   };
+  
+  if (loading) {
+    return (
+        <div className="container mx-auto p-4 md:p-8">
+             <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold tracking-tight">Voting History</h1>
+                <Button asChild>
+                <Link href="/create">
+                    <Plus className="mr-2 h-4 w-4" /> New Voting
+                </Link>
+                </Button>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="animate-pulse">
+                        <CardHeader>
+                            <div className="h-6 bg-muted rounded w-3/4"></div>
+                            <div className="h-4 bg-muted rounded w-1/2 mt-2"></div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-4 bg-muted rounded w-full"></div>
+                        </CardContent>
+                        <CardFooter className="flex justify-end gap-2">
+                            <div className="h-10 w-10 bg-muted rounded-md"></div>
+                            <div className="h-10 w-10 bg-muted rounded-md"></div>
+                            <div className="h-10 w-24 bg-muted rounded-md"></div>
+                            <div className="h-10 w-28 bg-muted rounded-md"></div>
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -62,9 +96,6 @@ export default function Home() {
                     {voting.status.charAt(0).toUpperCase() + voting.status.slice(1)}
                   </Badge>
                 </div>
-                <CardDescription>
-                  {voting.contestants.length} contestants
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 

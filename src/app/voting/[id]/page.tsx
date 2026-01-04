@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState, useContext, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { VotingContext } from '@/context/VotingContext';
+import { useVoting } from '@/context/VotingContext';
 import {
   Card,
   CardContent,
@@ -27,23 +27,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Contestant } from '@/lib/types';
 
 export default function VotingPage() {
   const params = useParams();
   const router = useRouter();
-  const { getVotingById, castVote, completeVoting } = useContext(VotingContext);
+  const votingId = params.id as string;
+  const { getVotingById, castVote, completeVoting, getContestants } = useVoting();
   const { toast } = useToast();
 
-  const [selectedContestantId, setSelectedContestantId] = useState<string | null>(null);
-  const [voting, setVoting] = useState(getVotingById(params.id as string));
+  const [selectedContestant, setSelectedContestant] = useState<Contestant | null>(null);
 
-  useEffect(() => {
-    setVoting(getVotingById(params.id as string));
-  }, [getVotingById, params.id]);
+  const voting = useMemo(() => getVotingById(votingId), [getVotingById, votingId]);
+  const { data: contestants, isLoading: contestantsLoading } = getContestants(votingId);
 
 
-  if (!voting) {
+  if (contestantsLoading || !voting) {
     return (
+      <div className="container mx-auto p-8 text-center">
+        <h1 className="text-2xl font-bold">Loading...</h1>
+      </div>
+    );
+  }
+
+  if (!contestants) {
+     return (
       <div className="container mx-auto p-8 text-center">
         <h1 className="text-2xl font-bold">Voting Not Found</h1>
         <p className="text-muted-foreground">The voting you are looking for does not exist.</p>
@@ -53,7 +61,7 @@ export default function VotingPage() {
   }
 
   const handleVote = () => {
-    if (!selectedContestantId) {
+    if (!selectedContestant) {
       toast({
         variant: 'destructive',
         title: 'No contestant selected',
@@ -61,12 +69,12 @@ export default function VotingPage() {
       });
       return;
     }
-    castVote(voting.id, selectedContestantId);
+    castVote(voting.id, selectedContestant);
     toast({
       title: 'Vote Cast!',
       description: 'Your vote has been successfully recorded.',
     });
-    setSelectedContestantId(null);
+    setSelectedContestant(null);
   };
 
   const handleCompleteVoting = () => {
@@ -108,12 +116,12 @@ export default function VotingPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {voting.contestants.map((contestant) => (
+            {contestants.map((contestant) => (
               <Card
                 key={contestant.id}
-                onClick={() => setSelectedContestantId(contestant.id)}
+                onClick={() => setSelectedContestant(contestant)}
                 className={`cursor-pointer transition-all flex flex-col ${
-                  selectedContestantId === contestant.id
+                  selectedContestant?.id === contestant.id
                     ? 'ring-4 ring-primary ring-offset-2 ring-offset-background'
                     : 'hover:shadow-lg'
                 }`}
@@ -133,18 +141,18 @@ export default function VotingPage() {
                 </CardContent>
                 <CardFooter className="p-4">
                     <Button 
-                        variant={selectedContestantId === contestant.id ? 'default' : 'outline'} 
+                        variant={selectedContestant?.id === contestant.id ? 'default' : 'outline'} 
                         className="w-full"
                     >
-                        {selectedContestantId === contestant.id && <Check className="mr-2 h-4 w-4" />}
-                        {selectedContestantId === contestant.id ? 'Selected' : 'Select'}
+                        {selectedContestant?.id === contestant.id && <Check className="mr-2 h-4 w-4" />}
+                        {selectedContestant?.id === contestant.id ? 'Selected' : 'Select'}
                     </Button>
                 </CardFooter>
               </Card>
             ))}
           </div>
           <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Button size="lg" onClick={handleVote} disabled={!selectedContestantId}>
+            <Button size="lg" onClick={handleVote} disabled={!selectedContestant}>
               Cast Your Vote
             </Button>
              <AlertDialog>
@@ -172,4 +180,3 @@ export default function VotingPage() {
     </div>
   );
 }
-
