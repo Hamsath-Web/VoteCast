@@ -10,6 +10,8 @@ interface VotingContextType {
   castVote: (votingId: string, contestantId: string) => void;
   completeVoting: (votingId: string) => void;
   getVotingById: (votingId: string) => Voting | undefined;
+  deleteVoting: (votingId: string) => void;
+  updateVoting: (votingId: string, updatedData: Omit<Voting, 'id' | 'status'>) => void;
 }
 
 export const VotingContext = createContext<VotingContextType>({
@@ -18,6 +20,8 @@ export const VotingContext = createContext<VotingContextType>({
   castVote: () => {},
   completeVoting: () => {},
   getVotingById: () => undefined,
+  deleteVoting: () => {},
+  updateVoting: () => {},
 });
 
 export const VotingProvider = ({ children }: { children: ReactNode }) => {
@@ -85,8 +89,37 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
     return votings.find(v => v.id === votingId);
   };
 
+  const deleteVoting = (votingId: string) => {
+    setVotings(prev => prev.filter(voting => voting.id !== votingId));
+  };
+  
+  const updateVoting = (votingId: string, updatedData: Omit<Voting, 'id' | 'status'>) => {
+    setVotings(prev =>
+      prev.map(voting => {
+        if (voting.id === votingId) {
+          // Keep existing votes and IDs for contestants with the same name, add new contestants
+          const updatedContestants = updatedData.contestants.map((newContestant) => {
+            const existingContestant = voting.contestants.find(c => c.name === newContestant.name);
+            return existingContestant ? existingContestant : {
+                ...newContestant,
+                id: `contestant-${new Date().getTime()}-${Math.random()}`,
+                votes: 0
+            };
+          });
+
+          return {
+            ...voting,
+            title: updatedData.title,
+            contestants: updatedContestants,
+          };
+        }
+        return voting;
+      })
+    );
+  };
+
   return (
-    <VotingContext.Provider value={{ votings, addVoting, castVote, completeVoting, getVotingById }}>
+    <VotingContext.Provider value={{ votings, addVoting, castVote, completeVoting, getVotingById, deleteVoting, updateVoting }}>
       {children}
     </VotingContext.Provider>
   );
