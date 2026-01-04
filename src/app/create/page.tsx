@@ -25,13 +25,13 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useVoting } from '@/context/VotingContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Trash, Upload } from 'lucide-react';
+import { ArrowLeft, Trash } from 'lucide-react';
 import Link from 'next/link';
+import { placeholderImagesArray } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 const contestantSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  faceImage: z.string().min(1, 'Face image is required'),
-  teamLogo: z.string().min(1, 'Team logo is required'),
 });
 
 const formSchema = z.object({
@@ -40,15 +40,6 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
-
-const fileToDataUrl = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-};
 
 export default function CreateVotingPage() {
   const router = useRouter();
@@ -61,8 +52,8 @@ export default function CreateVotingPage() {
     defaultValues: {
       title: '',
       contestants: [
-        { name: '', faceImage: '', teamLogo: '' },
-        { name: '', faceImage: '', teamLogo: '' },
+        { name: '' },
+        { name: '' },
       ],
     },
   });
@@ -73,14 +64,23 @@ export default function CreateVotingPage() {
   });
   
   const addContestant = () => {
-    append({ name: '', faceImage: '', teamLogo: '' });
+    append({ name: '' });
   };
-
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-        await addVoting({ title: data.title, contestants: data.contestants });
+        const contestantsWithImages = data.contestants.map((c, i) => {
+            const faceImage = placeholderImagesArray[i % 8]; // Cycle through 8 face images
+            const logoImage = placeholderImagesArray[(i % 4) + 8]; // Cycle through 4 logo images
+            return {
+                ...c,
+                faceImage: faceImage.imageUrl,
+                teamLogo: logoImage.imageUrl,
+            }
+        });
+
+        await addVoting({ title: data.title, contestants: contestantsWithImages });
         toast({
         title: 'Success!',
         description: `Voting "${data.title}" has been created.`,
@@ -107,7 +107,7 @@ export default function CreateVotingPage() {
         <Card>
           <CardHeader>
             <CardTitle>Create a New Voting</CardTitle>
-            <CardDescription>Fill out the details below to set up your new voting poll.</CardDescription>
+            <CardDescription>Fill out the details below to set up your new voting poll. Images will be assigned automatically.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -128,7 +128,7 @@ export default function CreateVotingPage() {
                 
                 <Separator />
                 <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Contestant Details</h3>
+                    <h3 className="text-lg font-medium">Contestants</h3>
                     <Button type="button" onClick={addContestant} disabled={isSubmitting}>Add Contestant</Button>
                 </div>
                 <div className="space-y-6">
@@ -153,82 +153,20 @@ export default function CreateVotingPage() {
                             </FormItem>
                           )}
                         />
-                        <FormField
-                            control={form.control}
-                            name={`contestants.${index}.faceImage`}
-                            render={({ field: { onChange, value, ...rest } }) => (
-                                <FormItem>
-                                    <FormLabel>Face Image</FormLabel>
-                                    <FormControl>
-                                        <div className="flex items-center gap-4">
-                                            {value && <img src={value} alt={`Contestant ${index+1} face`} className="h-20 w-20 rounded-md object-cover" />}
-                                            <Input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                id={`faceImage-${index}`}
-                                                onChange={async (e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        const dataUrl = await fileToDataUrl(file);
-                                                        onChange(dataUrl);
-                                                    }
-                                                }}
-                                                {...rest}
-                                                disabled={isSubmitting}
-                                            />
-                                            <label htmlFor={`faceImage-${index}`} className="flex-1">
-                                                <Button type="button" asChild disabled={isSubmitting}>
-                                                    <span className="cursor-pointer w-full">
-                                                        <Upload className="mr-2 h-4 w-4"/>
-                                                        {value ? 'Change Image' : 'Upload Image'}
-                                                    </span>
-                                                </Button>
-                                            </label>
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name={`contestants.${index}.teamLogo`}
-                            render={({ field: { onChange, value, ...rest } }) => (
-                                <FormItem>
-                                    <FormLabel>Team Logo</FormLabel>
-                                    <FormControl>
-                                        <div className="flex items-center gap-4">
-                                            {value && <img src={value} alt={`Contestant ${index+1} logo`} className="h-20 w-20 rounded-md object-contain" />}
-                                            <Input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                id={`teamLogo-${index}`}
-                                                onChange={async (e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        const dataUrl = await fileToDataUrl(file);
-                                                        onChange(dataUrl);
-                                                    }
-                                                }}
-                                                {...rest}
-                                                disabled={isSubmitting}
-                                            />
-                                            <label htmlFor={`teamLogo-${index}`} className="flex-1">
-                                                <Button type="button" asChild disabled={isSubmitting}>
-                                                    <span className="cursor-pointer w-full">
-                                                        <Upload className="mr-2 h-4 w-4"/>
-                                                        {value ? 'Change Logo' : 'Upload Logo'}
-                                                    </span>
-                                                </Button>
-                                            </label>
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="flex items-center gap-4">
+                            <div>
+                                <FormLabel>Face Image (auto)</FormLabel>
+                                <div className="relative h-20 w-20 rounded-md object-cover mt-2 border">
+                                    <Image src={placeholderImagesArray[index % 8].imageUrl} alt="Placeholder face" layout="fill" objectFit="cover" className="rounded-md"/>
+                                </div>
+                            </div>
+                            <div>
+                                <FormLabel>Team Logo (auto)</FormLabel>
+                                <div className="relative h-20 w-20 rounded-md object-contain mt-2 border p-1">
+                                     <Image src={placeholderImagesArray[(index % 4) + 8].imageUrl} alt="Placeholder logo" layout="fill" objectFit="contain"/>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                   ))}
                 </div>
