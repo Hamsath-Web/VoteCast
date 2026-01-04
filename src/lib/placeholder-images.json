@@ -1,3 +1,76 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "face1",
+      "description": "Face 1",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "face2",
+      "description": "Face 2",
+      "imageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "face3",
+      "description": "Face 3",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "face4",
+      "description": "Face 4",
+      "imageUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "face5",
+      "description": "Face 5",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "face6",
+      "description": "Face 6",
+      "imageUrl": "https://images.unsplash.com/photo-1521146764736-56c929d59c83?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "face7",
+      "description": "Face 7",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "face8",
+      "description": "Face 8",
+      "imageUrl": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmYWNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY3NTE3NjMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face portrait"
+    },
+    {
+      "id": "logo1",
+      "description": "Logo 1",
+      "imageUrl": "https://images.unsplash.com/photo-1748326650737-33500fdfda30?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGxvZ298ZW58MHx8fHwxNzY3NTA2MjMxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract logo"
+    },
+    {
+      "id": "logo2",
+      "description": "Logo 2",
+      "imageUrl": "https://images.unsplash.com/photo-1744390166658-afd6391e914c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhYnN0cmFjdCUyMGxvZ298ZW58MHx8fHwxNzY3NTA2MjMxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract logo"
+    },
+    {
+      "id": "logo3",
+      "description": "Logo 3",
+      "imageUrl": "https://images.unsplash.com/photo-1744390166851-82056c6552d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YWJzdHJhY3QlMjBsb2dvfGVufDB8fHx8MTc2NzUwNjIzMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract logo"
+    },
+    {
+      "id": "logo4",
+      "description": "Logo 4",
+      "imageUrl": "https://images.unsplash.com/photo-1747862712521-e4a37b12a039?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhYnN0cmFjdCUyMGxvZ298ZW58MHx8fHwxNzY3NTA2MjMxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract logo"
+    }
+  ]
 }
