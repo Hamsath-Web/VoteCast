@@ -22,25 +22,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { VotingContext } from '@/context/VotingContext';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Trash } from 'lucide-react';
 import Link from 'next/link';
 
 const contestantSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  faceImage1Id: z.string().min(1, 'Image is required'),
-  faceImage2Id: z.string().min(1, 'Image is required'),
-  teamLogoId: z.string().min(1, 'Logo is required'),
+  faceImage: z.string().url('Must be a valid URL'),
+  teamLogo: z.string().url('Must be a valid URL'),
 });
 
 const formSchema = z.object({
@@ -62,8 +53,8 @@ export default function CreateVotingPage() {
       title: '',
       numberOfContestants: 2,
       contestants: [
-        { name: '', faceImage1Id: '', faceImage2Id: '', teamLogoId: '' },
-        { name: '', faceImage1Id: '', faceImage2Id: '', teamLogoId: '' },
+        { name: '', faceImage: '', teamLogo: '' },
+        { name: '', faceImage: '', teamLogo: '' },
       ],
     },
   });
@@ -73,18 +64,13 @@ export default function CreateVotingPage() {
     name: 'contestants',
   });
 
-  const faceImages = PlaceHolderImages.filter(img => img.imageHint.includes('face'));
-  const teamLogos = PlaceHolderImages.filter(img => img.imageHint.includes('logo'));
-
-  const numberOfContestants = form.watch('numberOfContestants');
-
   const handleContestantCountChange = (count: number) => {
     if (count < 2) count = 2;
     form.setValue('numberOfContestants', count);
     const currentCount = fields.length;
     if (count > currentCount) {
       for (let i = currentCount; i < count; i++) {
-        append({ name: '', faceImage1Id: '', faceImage2Id: '', teamLogoId: '' });
+        append({ name: '', faceImage: '', teamLogo: '' });
       }
     } else if (count < currentCount) {
       const newFields = fields.slice(0, count);
@@ -93,17 +79,7 @@ export default function CreateVotingPage() {
   };
 
   const onSubmit = (data: FormData) => {
-    const contestants = data.contestants.map(c => {
-      const faceImage1 = PlaceHolderImages.find(img => img.id === c.faceImage1Id);
-      const faceImage2 = PlaceHolderImages.find(img => img.id === c.faceImage2Id);
-      const teamLogo = PlaceHolderImages.find(img => img.id === c.teamLogoId);
-      if (!faceImage1 || !faceImage2 || !teamLogo) {
-        throw new Error('Image not found');
-      }
-      return { name: c.name, faceImage1, faceImage2, teamLogo };
-    });
-
-    addVoting({ title: data.title, contestants });
+    addVoting({ title: data.title, contestants: data.contestants });
     toast({
       title: 'Success!',
       description: `Voting "${data.title}" has been created.`,
@@ -173,45 +149,25 @@ export default function CreateVotingPage() {
                             </FormItem>
                           )}
                         />
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                        <Controller
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <FormField
                           control={form.control}
-                          name={`contestants.${index}.faceImage1Id`}
+                          name={`contestants.${index}.faceImage`}
                           render={({ field }) => (
                              <FormItem>
-                              <FormLabel>Face Image 1</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Select an image" /></SelectTrigger></FormControl>
-                                <SelectContent><SelectItem value="null" disabled>Select an image</SelectItem>{faceImages.map(img => <SelectItem key={img.id} value={img.id}>{img.description}</SelectItem>)}</SelectContent>
-                              </Select>
+                              <FormLabel>Face Image URL</FormLabel>
+                              <FormControl><Input placeholder="https://example.com/face.jpg" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        <Controller
+                        <FormField
                           control={form.control}
-                          name={`contestants.${index}.faceImage2Id`}
+                          name={`contestants.${index}.teamLogo`}
                            render={({ field }) => (
                              <FormItem>
-                              <FormLabel>Face Image 2</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Select an image" /></SelectTrigger></FormControl>
-                                <SelectContent><SelectItem value="null" disabled>Select an image</SelectItem>{faceImages.map(img => <SelectItem key={img.id} value={img.id}>{img.description}</SelectItem>)}</SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <Controller
-                          control={form.control}
-                          name={`contestants.${index}.teamLogoId`}
-                           render={({ field }) => (
-                             <FormItem>
-                              <FormLabel>Team Logo</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Select a logo" /></SelectTrigger></FormControl>
-                                <SelectContent><SelectItem value="null" disabled>Select a logo</SelectItem>{teamLogos.map(img => <SelectItem key={img.id} value={img.id}>{img.description}</SelectItem>)}</SelectContent>
-                              </Select>
+                              <FormLabel>Team Logo URL</FormLabel>
+                              <FormControl><Input placeholder="https://example.com/logo.png" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}

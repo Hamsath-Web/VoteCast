@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, ReactNode } from 'react';
 import type { Voting, Contestant } from '@/lib/types';
-import { PlaceHolderImages, type ImagePlaceholder } from '@/lib/placeholder-images';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 interface VotingContextType {
   votings: Voting[];
@@ -27,9 +27,9 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
       title: 'Best Developer Framework',
       status: 'open',
       contestants: [
-        { id: 'contestant-1', name: 'React', votes: 15, faceImage1: PlaceHolderImages[0], faceImage2: PlaceHolderImages[1], teamLogo: PlaceHolderImages[8] },
-        { id: 'contestant-2', name: 'Vue', votes: 12, faceImage1: PlaceHolderImages[2], faceImage2: PlaceHolderImages[3], teamLogo: PlaceHolderImages[9] },
-        { id: 'contestant-3', name: 'Angular', votes: 8, faceImage1: PlaceHolderImages[4], faceImage2: PlaceHolderImages[5], teamLogo: PlaceHolderImages[10] },
+        { id: 'contestant-1', name: 'React', votes: 15, faceImage: PlaceHolderImages[0].imageUrl, teamLogo: PlaceHolderImages[8].imageUrl },
+        { id: 'contestant-2', name: 'Vue', votes: 12, faceImage: PlaceHolderImages[2].imageUrl, teamLogo: PlaceHolderImages[9].imageUrl },
+        { id: 'contestant-3', name: 'Angular', votes: 8, faceImage: PlaceHolderImages[4].imageUrl, teamLogo: PlaceHolderImages[10].imageUrl },
       ],
     },
     {
@@ -37,8 +37,8 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
       title: 'Favorite Sci-Fi Movie',
       status: 'closed',
       contestants: [
-        { id: 'contestant-4', name: 'Blade Runner 2049', votes: 25, faceImage1: PlaceHolderImages[0], faceImage2: PlaceHolderImages[1], teamLogo: PlaceHolderImages[8] },
-        { id: 'contestant-5', name: 'Dune: Part Two', votes: 30, faceImage1: PlaceHolderImages[2], faceImage2: PlaceHolderImages[3], teamLogo: PlaceHolderImages[9] },
+        { id: 'contestant-4', name: 'Blade Runner 2049', votes: 25, faceImage: PlaceHolderImages[0].imageUrl, teamLogo: PlaceHolderImages[8].imageUrl },
+        { id: 'contestant-5', name: 'Dune: Part Two', votes: 30, faceImage: PlaceHolderImages[2].imageUrl, teamLogo: PlaceHolderImages[9].imageUrl },
       ],
     }
   ]);

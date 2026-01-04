@@ -56,12 +56,11 @@ export default function ResultsPage() {
               </CardHeader>
               <CardContent className="flex flex-col items-center gap-4">
                 <Image
-                  src={winner.faceImage1.imageUrl}
+                  src={winner.faceImage}
                   alt={winner.name}
                   width={150}
                   height={150}
-                  className="rounded-full border-4 border-accent"
-                  data-ai-hint={winner.faceImage1.imageHint}
+                  className="rounded-full border-4 border-accent object-cover"
                 />
                 <h3 className="text-4xl font-bold text-accent-foreground">{winner.name}</h3>
               </CardContent>
@@ -114,7 +113,7 @@ export default function ResultsPage() {
                               {index === 2 && <Trophy className="h-6 w-6 text-yellow-800"/>}
                               {index > 2 && (index + 1)}
                           </span>
-                          <Image src={c.teamLogo.imageUrl} alt={c.name} width={40} height={40} className="rounded-md" data-ai-hint={c.teamLogo.imageHint} />
+                          <Image src={c.teamLogo} alt={c.name} width={40} height={40} className="rounded-md object-contain" />
                           <span className="font-semibold text-lg">{c.name}</span>
                         </div>
                         <span className="font-bold text-xl">{c.votes.toLocaleString()} votes</span>

@@ -65,6 +65,7 @@ export default function VotingPage() {
       title: 'Vote Cast!',
       description: 'Your vote has been successfully recorded.',
     });
+    setSelectedContestantId(null);
   };
 
   const handleCompleteVoting = () => {
@@ -122,29 +123,19 @@ export default function VotingPage() {
                 <CardContent className="flex flex-col items-center gap-4">
                   <div className="flex gap-4">
                     <Image
-                      src={contestant.faceImage1.imageUrl}
-                      alt={`${contestant.name} face 1`}
+                      src={contestant.faceImage}
+                      alt={`${contestant.name} face`}
                       width={100}
                       height={100}
-                      className="rounded-full border-4 border-card"
-                      data-ai-hint={contestant.faceImage1.imageHint}
-                    />
-                     <Image
-                      src={contestant.faceImage2.imageUrl}
-                      alt={`${contestant.name} face 2`}
-                      width={100}
-                      height={100}
-                      className="rounded-full border-4 border-card"
-                      data-ai-hint={contestant.faceImage2.imageHint}
+                      className="rounded-full border-4 border-card object-cover"
                     />
                   </div>
                    <Image
-                      src={contestant.teamLogo.imageUrl}
+                      src={contestant.teamLogo}
                       alt={`${contestant.name} team logo`}
                       width={80}
                       height={80}
-                      className="rounded-md"
-                      data-ai-hint={contestant.teamLogo.imageHint}
+                      className="rounded-md object-contain"
                     />
                 </CardContent>
                 <CardFooter className="p-4">
