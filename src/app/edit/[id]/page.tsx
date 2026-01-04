@@ -27,14 +27,12 @@ import { useVoting } from '@/context/VotingContext';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Trash } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { placeholderImagesArray } from '@/lib/placeholder-images';
 
 const contestantSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, 'Name is required'),
-  faceImage: z.string().min(1, 'Image is required'),
-  teamLogo: z.string().min(1, 'Team logo is required'),
+  faceImage: z.string().optional(),
+  teamLogo: z.string().optional(),
   votes: z.number().optional(),
 });
 
@@ -81,10 +79,7 @@ export default function EditVotingPage() {
   });
 
   const addContestant = () => {
-    const nextIndex = fields.length;
-    const faceImage = placeholderImagesArray[nextIndex % 8];
-    const logoImage = placeholderImagesArray[(nextIndex % 4) + 8];
-    append({ name: '', faceImage: faceImage.imageUrl, teamLogo: logoImage.imageUrl, votes: 0 });
+    append({ name: '', faceImage: '', teamLogo: '', votes: 0 });
   };
   
   const onSubmit = async (data: FormData) => {
@@ -121,7 +116,7 @@ export default function EditVotingPage() {
         <Card>
           <CardHeader>
             <CardTitle>Edit Voting</CardTitle>
-            <CardDescription>Update the details of your voting poll. Images are assigned automatically.</CardDescription>
+            <CardDescription>Update the details of your voting poll. Images are optional.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -167,20 +162,6 @@ export default function EditVotingPage() {
                             </FormItem>
                           )}
                         />
-                        <div className="flex items-center gap-4">
-                            <div>
-                                <FormLabel>Face Image</FormLabel>
-                                <div className="relative h-20 w-20 rounded-md object-cover mt-2 border">
-                                    <Image src={form.getValues(`contestants.${index}.faceImage`)} alt="Contestant face" layout="fill" objectFit="cover" className="rounded-md"/>
-                                </div>
-                            </div>
-                            <div>
-                                <FormLabel>Team Logo</FormLabel>
-                                <div className="relative h-20 w-20 rounded-md object-contain mt-2 border p-1">
-                                     <Image src={form.getValues(`contestants.${index}.teamLogo`)} alt="Contestant logo" layout="fill" objectFit="contain"/>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                   ))}
                 </div>

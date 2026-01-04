@@ -27,8 +27,6 @@ import { useVoting } from '@/context/VotingContext';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Trash } from 'lucide-react';
 import Link from 'next/link';
-import { placeholderImagesArray } from '@/lib/placeholder-images';
-import Image from 'next/image';
 
 const contestantSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -70,17 +68,15 @@ export default function CreateVotingPage() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-        const contestantsWithImages = data.contestants.map((c, i) => {
-            const faceImage = placeholderImagesArray[i % 8]; // Cycle through 8 face images
-            const logoImage = placeholderImagesArray[(i % 4) + 8]; // Cycle through 4 logo images
+        const contestantsWithOptionalImages = data.contestants.map((c) => {
             return {
                 ...c,
-                faceImage: faceImage.imageUrl,
-                teamLogo: logoImage.imageUrl,
+                faceImage: '',
+                teamLogo: '',
             }
         });
 
-        await addVoting({ title: data.title, contestants: contestantsWithImages });
+        await addVoting({ title: data.title, contestants: contestantsWithOptionalImages });
         toast({
         title: 'Success!',
         description: `Voting "${data.title}" has been created.`,
@@ -107,7 +103,7 @@ export default function CreateVotingPage() {
         <Card>
           <CardHeader>
             <CardTitle>Create a New Voting</CardTitle>
-            <CardDescription>Fill out the details below to set up your new voting poll. Images will be assigned automatically.</CardDescription>
+            <CardDescription>Fill out the details below to set up your new voting poll. Images for contestants are optional.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -153,20 +149,6 @@ export default function CreateVotingPage() {
                             </FormItem>
                           )}
                         />
-                        <div className="flex items-center gap-4">
-                            <div>
-                                <FormLabel>Face Image (auto)</FormLabel>
-                                <div className="relative h-20 w-20 rounded-md object-cover mt-2 border">
-                                    <Image src={placeholderImagesArray[index % 8].imageUrl} alt="Placeholder face" layout="fill" objectFit="cover" className="rounded-md"/>
-                                </div>
-                            </div>
-                            <div>
-                                <FormLabel>Team Logo (auto)</FormLabel>
-                                <div className="relative h-20 w-20 rounded-md object-contain mt-2 border p-1">
-                                     <Image src={placeholderImagesArray[(index % 4) + 8].imageUrl} alt="Placeholder logo" layout="fill" objectFit="contain"/>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                   ))}
                 </div>

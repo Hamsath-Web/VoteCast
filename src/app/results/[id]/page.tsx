@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Crown, ArrowLeft, Trophy } from 'lucide-react';
+import { Crown, ArrowLeft, Trophy, User as UserIcon } from 'lucide-react';
 import { useVoting } from '@/context/VotingContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,13 +67,17 @@ export default function ResultsPage() {
                 <CardDescription>With {winner.votes} out of {totalVotes} votes</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center gap-4">
-                <div className="relative h-36 w-36">
-                  <Image
-                    src={winner.faceImage}
-                    alt={winner.name}
-                    fill
-                    className="rounded-full border-4 border-accent object-cover"
-                  />
+                <div className="relative h-36 w-36 rounded-full border-4 border-accent bg-muted flex items-center justify-center">
+                  {winner.faceImage ? (
+                    <Image
+                      src={winner.faceImage}
+                      alt={winner.name}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="h-24 w-24 text-muted-foreground" />
+                  )}
                 </div>
                 <h3 className="text-4xl font-bold text-accent-foreground">{winner.name}</h3>
               </CardContent>
@@ -126,8 +130,12 @@ export default function ResultsPage() {
                               {index === 2 && <Trophy className="h-6 w-6 text-yellow-800"/>}
                               {index > 2 && (index + 1)}
                           </span>
-                          <div className="relative h-12 w-12">
-                            <Image src={c.faceImage} alt={c.name} fill className="rounded-full object-cover" />
+                          <div className="relative h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                            {c.faceImage ? (
+                                <Image src={c.faceImage} alt={c.name} fill className="rounded-full object-cover" />
+                            ) : (
+                                <UserIcon className="h-8 w-8 text-muted-foreground" />
+                            )}
                           </div>
                           <span className="font-semibold text-lg">{c.name}</span>
                         </div>

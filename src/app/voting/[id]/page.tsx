@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Check, Lock, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Check, Lock, BarChart3, User as UserIcon } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -130,21 +130,29 @@ export default function VotingPage() {
                   <CardTitle className="text-center text-2xl">{contestant.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow flex flex-col items-center justify-center gap-4">
-                  <div className="relative h-48 w-full">
-                      <Image
-                        src={contestant.faceImage}
-                        alt={`${contestant.name} face`}
-                        fill
-                        className="object-contain"
-                      />
+                  <div className="relative h-48 w-full bg-muted rounded-md flex items-center justify-center">
+                      {contestant.faceImage ? (
+                        <Image
+                            src={contestant.faceImage}
+                            alt={`${contestant.name} face`}
+                            fill
+                            className="object-contain"
+                        />
+                      ) : (
+                        <UserIcon className="h-24 w-24 text-muted-foreground"/>
+                      )}
                   </div>
-                   <div className="relative h-24 w-full">
-                      <Image
-                        src={contestant.teamLogo}
-                        alt={`${contestant.name} logo`}
-                        fill
-                        className="object-contain"
-                      />
+                   <div className="relative h-24 w-full bg-muted rounded-md flex items-center justify-center">
+                      {contestant.teamLogo ? (
+                        <Image
+                            src={contestant.teamLogo}
+                            alt={`${contestant.name} logo`}
+                            fill
+                            className="object-contain"
+                        />
+                      ) : (
+                        <UserIcon className="h-12 w-12 text-muted-foreground"/>
+                      )}
                   </div>
                 </CardContent>
                 <CardFooter className="p-4">
