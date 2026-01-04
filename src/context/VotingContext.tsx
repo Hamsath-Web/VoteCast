@@ -31,7 +31,7 @@ interface VotingContextType {
   loading: boolean;
   addVoting: (votingData: {
     title: string;
-    contestants: { name: string; faceImage: string }[];
+    contestants: { name: string; faceImage: string, teamLogo: string }[];
   }) => Promise<void>;
   getContestants: (
     votingId: string
@@ -44,7 +44,7 @@ interface VotingContextType {
     votingId: string,
     updatedData: {
       title: string;
-      contestants: (Partial<Contestant> & { name: string; faceImage: string })[];
+      contestants: (Partial<Contestant> & { name: string; faceImage: string, teamLogo: string })[];
     }
   ) => Promise<void>;
 }
@@ -85,7 +85,7 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
 
   const addVoting = async (votingData: {
     title: string;
-    contestants: { name: string; faceImage: string }[];
+    contestants: { name: string; faceImage: string, teamLogo: string }[];
   }) => {
     if (!user || !firestore)
       throw new Error('User must be authenticated to create a voting.');
@@ -157,7 +157,7 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
     votingId: string,
     updatedData: {
       title: string;
-      contestants: (Partial<Contestant> & { name: string; faceImage: string })[];
+      contestants: (Partial<Contestant> & { name: string; faceImage: string, teamLogo: string })[];
     }
   ) => {
     if(!firestore) return;
@@ -176,13 +176,14 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
       if (c.id) {
         // Existing contestant
         const contestantRef = doc(contestantsColRef, c.id);
-        batch.update(contestantRef, { name: c.name, faceImage: c.faceImage });
+        batch.update(contestantRef, { name: c.name, faceImage: c.faceImage, teamLogo: c.teamLogo });
       } else {
         // New contestant
         const newContestantRef = doc(contestantsColRef);
         batch.set(newContestantRef, {
           name: c.name,
           faceImage: c.faceImage,
+          teamLogo: c.teamLogo,
           votes: 0,
         });
       }

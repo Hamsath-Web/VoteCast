@@ -30,7 +30,8 @@ import Link from 'next/link';
 
 const contestantSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  faceImage: z.string().min(1, 'Image is required'),
+  faceImage: z.string().min(1, 'Face image is required'),
+  teamLogo: z.string().min(1, 'Team logo is required'),
 });
 
 const formSchema = z.object({
@@ -60,8 +61,8 @@ export default function CreateVotingPage() {
     defaultValues: {
       title: '',
       contestants: [
-        { name: '', faceImage: '' },
-        { name: '', faceImage: '' },
+        { name: '', faceImage: '', teamLogo: '' },
+        { name: '', faceImage: '', teamLogo: '' },
       ],
     },
   });
@@ -72,7 +73,7 @@ export default function CreateVotingPage() {
   });
   
   const addContestant = () => {
-    append({ name: '', faceImage: '' });
+    append({ name: '', faceImage: '', teamLogo: '' });
   };
 
 
@@ -160,7 +161,7 @@ export default function CreateVotingPage() {
                                     <FormLabel>Face Image</FormLabel>
                                     <FormControl>
                                         <div className="flex items-center gap-4">
-                                            {value && <img src={value} alt={`Contestant ${index+1}`} className="h-20 w-20 rounded-md object-cover" />}
+                                            {value && <img src={value} alt={`Contestant ${index+1} face`} className="h-20 w-20 rounded-md object-cover" />}
                                             <Input
                                                 type="file"
                                                 accept="image/*"
@@ -181,6 +182,44 @@ export default function CreateVotingPage() {
                                                     <span className="cursor-pointer w-full">
                                                         <Upload className="mr-2 h-4 w-4"/>
                                                         {value ? 'Change Image' : 'Upload Image'}
+                                                    </span>
+                                                </Button>
+                                            </label>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name={`contestants.${index}.teamLogo`}
+                            render={({ field: { onChange, value, ...rest } }) => (
+                                <FormItem>
+                                    <FormLabel>Team Logo</FormLabel>
+                                    <FormControl>
+                                        <div className="flex items-center gap-4">
+                                            {value && <img src={value} alt={`Contestant ${index+1} logo`} className="h-20 w-20 rounded-md object-contain" />}
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                id={`teamLogo-${index}`}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const dataUrl = await fileToDataUrl(file);
+                                                        onChange(dataUrl);
+                                                    }
+                                                }}
+                                                {...rest}
+                                                disabled={isSubmitting}
+                                            />
+                                            <label htmlFor={`teamLogo-${index}`} className="flex-1">
+                                                <Button type="button" asChild disabled={isSubmitting}>
+                                                    <span className="cursor-pointer w-full">
+                                                        <Upload className="mr-2 h-4 w-4"/>
+                                                        {value ? 'Change Logo' : 'Upload Logo'}
                                                     </span>
                                                 </Button>
                                             </label>

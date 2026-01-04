@@ -55,14 +55,9 @@
           "type": "string",
           "description": "The name of the contestant."
         },
-        "faceImage1": {
+        "faceImage": {
           "type": "string",
-          "description": "URL of the first face image of the contestant.",
-          "format": "uri"
-        },
-        "faceImage2": {
-          "type": "string",
-          "description": "URL of the second face image of the contestant.",
+          "description": "URL of the face image of the contestant.",
           "format": "uri"
         },
         "teamLogo": {
@@ -75,8 +70,7 @@
         "id",
         "votingId",
         "name",
-        "faceImage1",
-        "faceImage2",
+        "faceImage",
         "teamLogo"
       ]
     },

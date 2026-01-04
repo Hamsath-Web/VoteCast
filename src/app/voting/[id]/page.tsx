@@ -138,6 +138,14 @@ export default function VotingPage() {
                         className="object-contain"
                       />
                   </div>
+                   <div className="relative h-24 w-full">
+                      <Image
+                        src={contestant.teamLogo}
+                        alt={`${contestant.name} logo`}
+                        fill
+                        className="object-contain"
+                      />
+                  </div>
                 </CardContent>
                 <CardFooter className="p-4">
                     <Button 

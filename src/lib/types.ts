@@ -3,6 +3,7 @@ export interface Contestant {
   id: string;
   name: string;
   faceImage: string;
+  teamLogo: string;
   votes: number;
 }
 
