@@ -1,0 +1,100 @@
+/**
+ * This ruleset governs the "VoteCast" application's Firestore database.
+ *
+ * Core Philosophy:
+ * The security model is designed for public transparency with controlled user participation.
+ * All voting events and contestant information are publicly readable by any user, including
+ * unauthenticated visitors, to support broad accessibility. Write operations are strictly
+ * controlled: content like voting events and contestants can only be managed by a trusted
+ * backend (e.g., using the Admin SDK), while end-users are only permitted to cast
+ * votes.
+ *
+ * Data Structure:
+ * The data is organized around a top-level `votings` collection. Each document in this
+ * collection represents a distinct voting event and contains two subcollections:
+ * - `contestants`: A list of participants for that specific voting event.
+ * - `votes`: A collection of all votes cast in that event.
+ *
+ * Key Security Decisions:
+ * - Public Read-Access: All data under `/votings` is publicly readable to fulfill the
+ *   requirement that anyone can view voting information.
+ * - Admin-Managed Content: Direct client-side creation, modification, or deletion of
+ *   `/votings` and `/votings/{votingId}/contestants` is disabled. This ensures data
+ *   integrity and assumes these entities are managed through a secure admin interface or backend process.
+ * - User-Generated Votes: Authenticated users can create (`cast`) a vote. Once a vote is cast,
+ *   it is immutable and cannot be updated or deleted by the user.
+ * - Enforced Relationships: When a vote is created, the rules verify that its `voterId` matches
+ *   the authenticated user and its `votingId` matches its location in the database, ensuring
+ *   data consistency.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for readable and reusable logic
+    
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Validates that a user is creating a vote for themselves and that the
+     * vote document is being placed in the correct subcollection.
+     * This enforces both ownership and relational integrity.
+     */
+    function isVoteCreator(votingId) {
+      return isSignedIn()
+          && request.resource.data.voterId == request.auth.uid
+          && request.resource.data.votingId == votingId;
+    }
+
+    /**
+     * @description Controls access to Voting documents, which are public-read but cannot be modified by clients.
+     * @path /votings/{votingId}
+     * @allow (get) Any user, signed in or not, can read a specific voting document.
+     * @deny (create) A signed-in user attempts to create a new voting event. This is restricted to backend processes.
+     * @principle Public read with admin-only writes. Since client-side admin roles aren't specified, all writes are disabled.
+     */
+    match /votings/{votingId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+
+      /**
+       * @description Controls access to Contestant documents, which are public-read and managed by the backend.
+       * @path /votings/{votingId}/contestants/{contestantId}
+       * @allow (list) Any user, signed in or not, can list all contestants for a voting event.
+       * @deny (update) A signed-in user tries to change a contestant's name.
+       * @principle Public read with admin-only writes. Inherits the principle of its parent collection.
+       */
+      match /contestants/{contestantId} {
+        allow get: if true;
+        allow list: if true;
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      /**
+       * @description Controls access to Vote documents. Votes are public-read, can be created by signed-in users, but are immutable once cast.
+       * @path /votings/{votingId}/votes/{voteId}
+       * @allow (create) An authenticated user { auth: { uid: 'user123' } } creates a vote with `data: { voterId: 'user123', votingId: '{votingId}' }`.
+       * @deny (create) An authenticated user { auth: { uid: 'user123' } } tries to create a vote for someone else `data: { voterId: 'user456' }`.
+       * @deny (update) A user attempts to change their vote after casting it.
+       * @principle Enforces ownership and relational integrity on creation and ensures votes are immutable.
+       */
+      match /votes/{voteId} {
+        allow get: if true;
+        allow list: if true;
+        allow create: if isVoteCreator(votingId);
+        allow update: if false;
+        allow delete: if false;
+      }
+    }
+  }
+}

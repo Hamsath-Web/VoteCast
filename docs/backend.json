@@ -1,0 +1,187 @@
+{
+  "entities": {
+    "Voting": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Voting",
+      "type": "object",
+      "description": "Represents a voting event with its associated details and results.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Voting entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the voting."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the voting event."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The date and time when the voting starts.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The date and time when the voting ends.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "startDate",
+        "endDate"
+      ]
+    },
+    "Contestant": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Contestant",
+      "type": "object",
+      "description": "Represents a contestant participating in a voting.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Contestant entity."
+        },
+        "votingId": {
+          "type": "string",
+          "description": "Reference to Voting. (Relationship: Voting 1:N Contestant)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the contestant."
+        },
+        "faceImage1": {
+          "type": "string",
+          "description": "URL of the first face image of the contestant.",
+          "format": "uri"
+        },
+        "faceImage2": {
+          "type": "string",
+          "description": "URL of the second face image of the contestant.",
+          "format": "uri"
+        },
+        "teamLogo": {
+          "type": "string",
+          "description": "URL of the team logo of the contestant.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "votingId",
+        "name",
+        "faceImage1",
+        "faceImage2",
+        "teamLogo"
+      ]
+    },
+    "Vote": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Vote",
+      "type": "object",
+      "description": "Represents a single vote cast for a contestant in a voting.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Vote entity."
+        },
+        "votingId": {
+          "type": "string",
+          "description": "Reference to Voting. (Relationship: Voting 1:N Vote)"
+        },
+        "contestantId": {
+          "type": "string",
+          "description": "Reference to Contestant. (Relationship: Contestant 1:N Vote)"
+        },
+        "voterId": {
+          "type": "string",
+          "description": "Unique identifier of the voter.  This assumes an external authentication system."
+        },
+        "voteDateTime": {
+          "type": "string",
+          "description": "The date and time when the vote was cast.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "votingId",
+        "contestantId",
+        "voterId",
+        "voteDateTime"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/votings/{votingId}",
+        "definition": {
+          "entityName": "Voting",
+          "schema": {
+            "$ref": "#/backend/entities/Voting"
+          },
+          "description": "Stores voting event details. Accessible by all users for reading.",
+          "params": [
+            {
+              "name": "votingId",
+              "description": "Unique identifier for the voting event."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/votings/{votingId}/contestants/{contestantId}",
+        "definition": {
+          "entityName": "Contestant",
+          "schema": {
+            "$ref": "#/backend/entities/Contestant"
+          },
+          "description": "Stores contestants associated with a specific voting. Includes denormalized 'votingId' to enforce parent-child relationship and enable queries.",
+          "params": [
+            {
+              "name": "votingId",
+              "description": "Unique identifier for the voting event."
+            },
+            {
+              "name": "contestantId",
+              "description": "Unique identifier for the contestant."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/votings/{votingId}/votes/{voteId}",
+        "definition": {
+          "entityName": "Vote",
+          "schema": {
+            "$ref": "#/backend/entities/Vote"
+          },
+          "description": "Stores individual votes cast for a contestant in a voting. Includes 'votingId' to enable relationship enforcement and queries.",
+          "params": [
+            {
+              "name": "votingId",
+              "description": "Unique identifier for the voting event."
+            },
+            {
+              "name": "voteId",
+              "description": "Unique identifier for the vote."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to efficiently support the VoteCast application, emphasizing security, scalability, and ease of querying. Given that all votings are to be accessible from any device, the data will be stored in a top-level collection to eliminate the need for complex security rules involving hierarchical data access, which would violate Authorization Independence. \n\n1.  **Votings Collection (`/votings`):** The core entity, `Voting`, is stored in a top-level collection named `votings`. This approach allows any client to read all votings without authentication and facilitates simple security rules.\n2.  **Contestants Subcollection (`/votings/{votingId}/contestants`):** Each voting has a subcollection `contestants` containing the contestants. This establishes the `Voting 1:N Contestant` relationship.  Storing contestants as a subcollection allows efficient retrieval of contestants for a specific voting. The `votingId` field within the `Contestant` entity enforces the parent-child relationship but is primarily for data integrity and querying.\n3.  **Votes Subcollection (`/votings/{votingId}/votes`):**  Each voting also has a subcollection named `votes` to store individual votes. This establishes the `Voting 1:N Vote` relationship. Each `Vote` document contains the `voterId`, enabling tracking of votes per user for data analysis (if needed) and fraud prevention. Crucially, the `votingId` is also present in the `Vote` document, reinforcing the relationship and enabling simple queries for votes related to a specific voting.\n\n**Authorization Independence:** This design avoids hierarchical authorization. Rules do not rely on `get()` calls to parent documents, since voting documents are accessible by all users.\n\n**QAPs Support:**\n*   The segregation of votings into its own collection enables secure `list` operations without complex filtering.\n*   Contestants and Votes are in subcollections and allow for listing operations based on a specific voting."
+  }
+}
