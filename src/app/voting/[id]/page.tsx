@@ -112,7 +112,7 @@ export default function VotingPage() {
               <Card
                 key={contestant.id}
                 onClick={() => setSelectedContestantId(contestant.id)}
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all flex flex-col ${
                   selectedContestantId === contestant.id
                     ? 'ring-4 ring-primary ring-offset-2 ring-offset-background'
                     : 'hover:shadow-lg'
@@ -121,24 +121,14 @@ export default function VotingPage() {
                 <CardHeader>
                   <CardTitle className="text-center text-2xl">{contestant.name}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center gap-4">
-                  <div className="flex gap-4">
-                    <div className="relative h-24 w-24">
+                <CardContent className="flex-grow flex flex-col items-center justify-center gap-4">
+                  <div className="relative h-48 w-full">
                       <Image
                         src={contestant.faceImage}
                         alt={`${contestant.name} face`}
                         fill
-                        className="rounded-full border-4 border-card object-cover"
+                        className="object-cover"
                       />
-                    </div>
-                  </div>
-                  <div className="relative h-20 w-20">
-                    <Image
-                      src={contestant.teamLogo}
-                      alt={`${contestant.name} team logo`}
-                      fill
-                      className="rounded-md object-contain"
-                    />
                   </div>
                 </CardContent>
                 <CardFooter className="p-4">
@@ -182,3 +172,4 @@ export default function VotingPage() {
     </div>
   );
 }
+

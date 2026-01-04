@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, ReactNode } from 'react';
 import type { Voting, Contestant } from '@/lib/types';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { placeholderImages } from '@/lib/placeholder-images';
 
 interface VotingContextType {
   votings: Voting[];
@@ -27,9 +27,9 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
       title: 'Best Developer Framework',
       status: 'open',
       contestants: [
-        { id: 'contestant-1', name: 'React', votes: 15, faceImage: PlaceHolderImages[0].imageUrl, teamLogo: PlaceHolderImages[8].imageUrl },
-        { id: 'contestant-2', name: 'Vue', votes: 12, faceImage: PlaceHolderImages[2].imageUrl, teamLogo: PlaceHolderImages[9].imageUrl },
-        { id: 'contestant-3', name: 'Angular', votes: 8, faceImage: PlaceHolderImages[4].imageUrl, teamLogo: PlaceHolderImages[10].imageUrl },
+        { id: 'contestant-1', name: 'React', votes: 15, faceImage: placeholderImages.face1.imageUrl },
+        { id: 'contestant-2', name: 'Vue', votes: 12, faceImage: placeholderImages.face2.imageUrl },
+        { id: 'contestant-3', name: 'Angular', votes: 8, faceImage: placeholderImages.face3.imageUrl },
       ],
     },
     {
@@ -37,8 +37,8 @@ export const VotingProvider = ({ children }: { children: ReactNode }) => {
       title: 'Favorite Sci-Fi Movie',
       status: 'closed',
       contestants: [
-        { id: 'contestant-4', name: 'Blade Runner 2049', votes: 25, faceImage: PlaceHolderImages[0].imageUrl, teamLogo: PlaceHolderImages[8].imageUrl },
-        { id: 'contestant-5', name: 'Dune: Part Two', votes: 30, faceImage: PlaceHolderImages[2].imageUrl, teamLogo: PlaceHolderImages[9].imageUrl },
+        { id: 'contestant-4', name: 'Blade Runner 2049', votes: 25, faceImage: placeholderImages.face4.imageUrl },
+        { id: 'contestant-5', name: 'Dune: Part Two', votes: 30, faceImage: placeholderImages.face5.imageUrl },
       ],
     }
   ]);

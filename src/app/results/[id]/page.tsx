@@ -115,8 +115,8 @@ export default function ResultsPage() {
                               {index === 2 && <Trophy className="h-6 w-6 text-yellow-800"/>}
                               {index > 2 && (index + 1)}
                           </span>
-                          <div className="relative h-10 w-10">
-                            <Image src={c.teamLogo} alt={c.name} fill className="rounded-md object-contain" />
+                          <div className="relative h-12 w-12">
+                            <Image src={c.faceImage} alt={c.name} fill className="rounded-full object-cover" />
                           </div>
                           <span className="font-semibold text-lg">{c.name}</span>
                         </div>

@@ -7,4 +7,14 @@ export type ImagePlaceholder = {
   imageHint: string;
 };
 
-export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages;
+// Keeping the array for potential future use, but also creating a keyed object
+export const placeholderImagesArray: ImagePlaceholder[] = data.placeholderImages;
+
+type MappedPlaceholderImages = {
+    [key: string]: ImagePlaceholder;
+}
+
+export const placeholderImages: MappedPlaceholderImages = data.placeholderImages.reduce((acc, current) => {
+    acc[current.id] = current;
+    return acc;
+}, {} as MappedPlaceholderImages);

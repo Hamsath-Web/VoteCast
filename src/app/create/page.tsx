@@ -2,7 +2,7 @@
 
 import { useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
@@ -25,13 +25,12 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { VotingContext } from '@/context/VotingContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Trash } from 'lucide-react';
+import { ArrowLeft, Trash, Upload } from 'lucide-react';
 import Link from 'next/link';
 
 const contestantSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  faceImage: z.string().url('Must be a valid URL'),
-  teamLogo: z.string().url('Must be a valid URL'),
+  faceImage: z.string().min(1, 'Image is required'),
 });
 
 const formSchema = z.object({
@@ -41,6 +40,15 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+};
 
 export default function CreateVotingPage() {
   const router = useRouter();
@@ -53,8 +61,8 @@ export default function CreateVotingPage() {
       title: '',
       numberOfContestants: 2,
       contestants: [
-        { name: '', faceImage: '', teamLogo: '' },
-        { name: '', faceImage: '', teamLogo: '' },
+        { name: '', faceImage: '' },
+        { name: '', faceImage: '' },
       ],
     },
   });
@@ -70,7 +78,7 @@ export default function CreateVotingPage() {
     const currentCount = fields.length;
     if (count > currentCount) {
       for (let i = currentCount; i < count; i++) {
-        append({ name: '', faceImage: '', teamLogo: '' });
+        append({ name: '', faceImage: '' });
       }
     } else if (count < currentCount) {
       const newFields = fields.slice(0, count);
@@ -136,8 +144,15 @@ export default function CreateVotingPage() {
                 <h3 className="text-lg font-medium">Contestant Details</h3>
                 <div className="space-y-6">
                   {fields.map((field, index) => (
-                    <div key={field.id} className="p-4 border rounded-lg relative">
-                      <h4 className="font-semibold mb-4">Contestant {index + 1}</h4>
+                    <div key={field.id} className="p-4 border rounded-lg relative space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-semibold">Contestant {index + 1}</h4>
+                        {fields.length > 2 && (
+                          <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                        <FormField
                           control={form.control}
                           name={`contestants.${index}.name`}
@@ -149,35 +164,43 @@ export default function CreateVotingPage() {
                             </FormItem>
                           )}
                         />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <FormField
-                          control={form.control}
-                          name={`contestants.${index}.faceImage`}
-                          render={({ field }) => (
-                             <FormItem>
-                              <FormLabel>Face Image URL</FormLabel>
-                              <FormControl><Input placeholder="https://example.com/face.jpg" {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                            control={form.control}
+                            name={`contestants.${index}.faceImage`}
+                            render={({ field: { onChange, value, ...rest } }) => (
+                                <FormItem>
+                                    <FormLabel>Face Image</FormLabel>
+                                    <FormControl>
+                                        <div className="flex items-center gap-4">
+                                            {value && <img src={value} alt={`Contestant ${index+1}`} className="h-20 w-20 rounded-md object-cover" />}
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                id={`faceImage-${index}`}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const dataUrl = await fileToDataUrl(file);
+                                                        onChange(dataUrl);
+                                                    }
+                                                }}
+                                                {...rest}
+                                            />
+                                            <label htmlFor={`faceImage-${index}`} className="flex-1">
+                                                <Button type="button" asChild>
+                                                    <span className="cursor-pointer w-full">
+                                                        <Upload className="mr-2 h-4 w-4"/>
+                                                        {value ? 'Change Image' : 'Upload Image'}
+                                                    </span>
+                                                </Button>
+                                            </label>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                        <FormField
-                          control={form.control}
-                          name={`contestants.${index}.teamLogo`}
-                           render={({ field }) => (
-                             <FormItem>
-                              <FormLabel>Team Logo URL</FormLabel>
-                              <FormControl><Input placeholder="https://example.com/logo.png" {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      {fields.length > 2 && (
-                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      )}
                     </div>
                   ))}
                 </div>
