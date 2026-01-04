@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useContext, useEffect } from 'react';
@@ -122,21 +123,23 @@ export default function VotingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
                   <div className="flex gap-4">
-                    <Image
-                      src={contestant.faceImage}
-                      alt={`${contestant.name} face`}
-                      width={100}
-                      height={100}
-                      className="rounded-full border-4 border-card object-cover"
-                    />
+                    <div className="relative h-24 w-24">
+                      <Image
+                        src={contestant.faceImage}
+                        alt={`${contestant.name} face`}
+                        fill
+                        className="rounded-full border-4 border-card object-cover"
+                      />
+                    </div>
                   </div>
-                   <Image
+                  <div className="relative h-20 w-20">
+                    <Image
                       src={contestant.teamLogo}
                       alt={`${contestant.name} team logo`}
-                      width={80}
-                      height={80}
+                      fill
                       className="rounded-md object-contain"
                     />
+                  </div>
                 </CardContent>
                 <CardFooter className="p-4">
                     <Button 

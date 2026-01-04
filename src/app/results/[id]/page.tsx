@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useContext, useMemo } from 'react';
@@ -55,13 +56,14 @@ export default function ResultsPage() {
                 <CardDescription>With {winner.votes} out of {totalVotes} votes</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center gap-4">
-                <Image
-                  src={winner.faceImage}
-                  alt={winner.name}
-                  width={150}
-                  height={150}
-                  className="rounded-full border-4 border-accent object-cover"
-                />
+                <div className="relative h-36 w-36">
+                  <Image
+                    src={winner.faceImage}
+                    alt={winner.name}
+                    fill
+                    className="rounded-full border-4 border-accent object-cover"
+                  />
+                </div>
                 <h3 className="text-4xl font-bold text-accent-foreground">{winner.name}</h3>
               </CardContent>
             </Card>
@@ -113,7 +115,9 @@ export default function ResultsPage() {
                               {index === 2 && <Trophy className="h-6 w-6 text-yellow-800"/>}
                               {index > 2 && (index + 1)}
                           </span>
-                          <Image src={c.teamLogo} alt={c.name} width={40} height={40} className="rounded-md object-contain" />
+                          <div className="relative h-10 w-10">
+                            <Image src={c.teamLogo} alt={c.name} fill className="rounded-md object-contain" />
+                          </div>
                           <span className="font-semibold text-lg">{c.name}</span>
                         </div>
                         <span className="font-bold text-xl">{c.votes.toLocaleString()} votes</span>
